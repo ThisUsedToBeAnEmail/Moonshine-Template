@@ -1,10 +1,12 @@
 use strict;
 use warnings;
 use Test::More;
- 
-package Test::One;
 
-use Moonshine::Template;
+BEGIN {
+    use_ok('Moonshine::Template');
+}
+
+package Test::One;
 
 our @ISA; BEGIN { @ISA = 'Moonshine::Template' };
 

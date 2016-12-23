@@ -18,7 +18,7 @@ WriteMakefile(
         'Test::More' => 0,
     },
     PREREQ_PM => {
-    	'Moonshine::Element' => '0.3',
+    	'Moonshine::Element' => '0.2',
 	'UNIVERSAL::Object' => '0.2',
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

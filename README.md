@@ -10,8 +10,6 @@ Version 0.1
 
        package MyApp::Template::World
 
-       use Moonshine::Template;
-
        our @ISA; BEGIN { @ISA = 'Moonshine::Template' }
 
        ***** now you have a choice - however a base element is required *****
@@ -62,6 +60,9 @@ the base element - look here - `Moonshine::Element`.
 # Render
 
     my $html = MyApp::Template::World->new->render;
+    ....
+    <div class="content"><ul><li class="one">one</li><li class="two">two</li><li
+    class="three">three</li></ul></div>
 
 # AUTHOR
 
