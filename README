@@ -1,85 +1,57 @@
-# NAME
+Moonshine-Template
 
-Moonshine::Template - Template some more html.
+The README is used to introduce the module and provide instructions on
+how to install the module, any machine dependencies it may have (for
+example C compilers and installed libraries) and any other information
+that should be provided before the module is installed.
 
-# VERSION
-
-Version 0.1 
-
-# SYNOPSIS
-
-       package MyApp::Template::World
-
-       use Moonshine::Template;
-
-       our @ISA; BEGIN { @ISA = 'Moonshine::Template' }
-
-       ***** now you have a choice - however a base element is required *****
-       sub base_element {
-          return {
-             tag => 'div'
-             class => 'test'
-          }
-       }
-
-       sub build_html {
-           my ($self, $base) = @_;
-
-           my $ul = $base->add_child({ tag => 'ul' });
-           for (qw/one two three/) {
-               $ul->add_child({ tag => 'li', class => $_, data => [ $_ ] });
-           }
-           return $base;
-       }
-    
-       ***** or *****
-       MyApp::Template::World->new({ base_element => { tag => div, class => test }});
-       
-       sub build_html {
-           my ($self, $base) = @_;
-       }                          
+A README file is required for CPAN modules since CPAN extracts the README
+file from a module distribution so that people browsing the archive
+can use it to get an idea of the module's uses. It is usually a good idea
+to provide version information here so that people can decide whether
+fixes for the module are worth downloading.
 
 
-       ***** or *****
-       sub build_html {
-          my $self = shift; 
+INSTALLATION
 
-          my $base = $self->add_base_element({ tag => 'div' });
-          .....
-       }
+To install this module, run the following commands:
 
-# Template
+	perl Makefile.PL
+	make
+	make test
+	make install
 
-## build\_html
+SUPPORT AND DOCUMENTATION
 
-Required - Your entry point to build some templated html.
+After installing, you can find documentation for this module with the
+perldoc command.
 
-## base\_element
+    perldoc Moonshine::Template
 
-Optional - Please return a HashRef because it's used to build 
-the base element - look here - `Moonshine::Element`.
+You can also look for information at:
 
-# Render
+    RT, CPAN's request tracker (report bugs here)
+        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Moonshine-Template
 
-    my $html = MyApp::Template::World->new->render;
+    AnnoCPAN, Annotated CPAN documentation
+        http://annocpan.org/dist/Moonshine-Template
 
-# AUTHOR
+    CPAN Ratings
+        http://cpanratings.perl.org/d/Moonshine-Template
 
-Robert Acock <ThisUsedToBeAnEmail@gmail.com>
+    Search CPAN
+        http://search.cpan.org/dist/Moonshine-Template/
 
-# CONFIGURATION AND ENVIRONMENT
 
-# INCOMPATIBILITIES
+LICENSE AND COPYRIGHT
 
-# LICENSE AND COPYRIGHT
-
-Copyright 2016 Robert Acock.
+Copyright (C) 2016 lnation
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the the Artistic License (2.0). You may obtain a
 copy of the full license at:
 
-[http://www.perlfoundation.org/artistic\_license\_2\_0](http://www.perlfoundation.org/artistic_license_2_0)
+L<http://www.perlfoundation.org/artistic_license_2_0>
 
 Any use, modification, and distribution of the Standard or Modified
 Versions is governed by this Artistic License. By using, modifying or
@@ -110,3 +82,4 @@ YOUR LOCAL LAW. UNLESS REQUIRED BY LAW, NO COPYRIGHT HOLDER OR
 CONTRIBUTOR WILL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR
 CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THE PACKAGE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
