@@ -3,6 +3,8 @@ package Moonshine::Template;
 use strict; 
 use warnings;
 
+our $VERSION = '0.02';
+
 use Moonshine::Element;
 
 our @ISA; BEGIN { @ISA = ('UNIVERSAL::Object') }
@@ -46,7 +48,7 @@ Moonshine::Template - Template some more html.
 
 =head1 VERSION
 
-Version 0.1 
+Version 0.2 
 
 =head1 SYNOPSIS
 
@@ -77,6 +79,7 @@ Version 0.1
     
     sub build_html {
         my ($self, $base) = @_;
+        ...
     }                          
 
 
@@ -85,7 +88,7 @@ Version 0.1
        my $self = shift; 
 
        my $base = $self->add_base_element({ tag => 'div' });
-       .....
+       ...
     }
 
 
@@ -97,8 +100,7 @@ Required - Your entry point to build some templated html.
 
 =head2 base_element
 
-Optional - Please return a HashRef because it's used to build 
-the base element - look here - C<Moonshine::Element>.
+Required - look here - L<Moonshine::Element>.
   
 =head1 Render
 

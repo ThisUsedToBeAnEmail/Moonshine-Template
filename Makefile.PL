@@ -2,10 +2,11 @@ use 5.006;
 use strict;
 use warnings;
 use ExtUtils::MakeMaker;
+use Module::Metadata;
 
 WriteMakefile(
     NAME             => 'Moonshine::Template',
-    AUTHOR           => q{lnation <thisusedtobeanemail@gmail.com>},
+    AUTHOR           => q{Robert Acock <thisusedtobeanemail@gmail.com>},
     VERSION_FROM     => 'lib/Moonshine/Template.pm',
     ABSTRACT_FROM    => 'lib/Moonshine/Template.pm',
     LICENSE          => 'artistic_2',
@@ -18,8 +19,8 @@ WriteMakefile(
         'Test::More' => 0,
     },
     PREREQ_PM => {
-    	'Moonshine::Element' => '0.2',
-	'UNIVERSAL::Object' => '0.2',
+    	'Moonshine::Element' => '0.03',
+	    'UNIVERSAL::Object' => '0.02',
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'Moonshine-Template-*' },
