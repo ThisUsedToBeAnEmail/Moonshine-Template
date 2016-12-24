@@ -110,6 +110,21 @@ subtest "build_and_render" => sub {
     });
 };
 
+subtest 'add_child_test' => sub {
+    add_child_test({
+        first_class => 'Test::One',
+        second_class => 'Test::Two',
+        placement => 'after',
+        expected_render => '<div class="content"><p class="testing">one two three</p></div><div class="content"><ul><li class="one">one</li><li class="two">two</li><li class="three">three</li></ul></div>',
+    });
+    add_child_test({
+        first_class => 'Test::One',
+        second_class => 'Test::Two',
+        placement => 'before',
+        expected_render => '<div class="content"><ul><li class="one">one</li><li class="two">two</li><li class="three">three</li></ul></div><div class="content"><p class="testing">one two three</p></div>',
+    });
+};
+
 subtest 'die' => sub {
     build_and_die({
         class       => 'Test::Build::Exception',
@@ -129,6 +144,17 @@ sub build_and_die {
 
     eval { $args->{class}->new; };
     like($@, $args->{exception}, "dead - $args->{exception}");
+}
+
+sub add_child_test {
+    my $args = shift;
+
+    my $first = $args->{first_class}->new;
+    my $second = $args->{second_class}->new;
+    my $placement = $args->{placement};
+
+    $first->{base_element}->add_child($second->{base_element}, $placement);
+    is($first->render, $args->{expected_render}, "render - $args->{expected_render}");
 }
 
 done_testing();
