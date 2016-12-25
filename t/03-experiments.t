@@ -6,6 +6,8 @@ BEGIN {
     use_ok('Moonshine::Template');
 }
 
+no warnings 'redefine';
+
 package Test::One;
 
 our @ISA; BEGIN { @ISA = 'Moonshine::Template' };
@@ -68,6 +70,7 @@ sub build_html {
     for ($self->has_stash) {
         $base->add_child({ tag => 'p', data => [ $self->stash($_) ]});
     }
+    return $base;
 }
 
 package main;

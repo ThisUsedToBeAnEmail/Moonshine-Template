@@ -11,7 +11,7 @@ use Ref::Util qw/:all/;
 our @ISA; BEGIN { @ISA = ('UNIVERSAL::Object') }
 our %HAS; BEGIN {
     %HAS = ( 
-        base_element => sub { undef }
+        ( map { $_ => sub { undef } } qw/base_element config/ )
     );
 }
 
@@ -35,17 +35,39 @@ sub _build_config {
     $_[0]->can('config') and $config = $_[0]->config or return {};
     
     for my $key (keys %{ $config }) {
+        next if $key eq 'base_element';
         if (my $template = $config->{$key}->{template}){
             my $template_args = $config->{$key}->{template_args} // {};
             $config->{$key}->{template_class} = $template->new($template_args);
         } 
 
         {
-            no strict 'refs';
-            *{"$key"} = sub {
-                 return $config->{$key};
-            }
-        };
+        	no strict 'refs'; no warnings 'redefine';
+            {
+                *{"has_$key"} = sub {
+                	my $val = $config->{$key};
+                	defined $val or return undef;
+                	is_arrayref($val) and return scalar @{$val};
+                	is_hashref($val) and return map { $_; }
+                  		sort { $a <=> $b or $a cmp $b }
+                  		keys %{$val};
+                	return 1;
+              	}
+            };
+        	{
+            	*{"$key"} = sub {
+               		my $val = $config->{$key};
+                	defined $_[1] or return $val;
+                	is_arrayref($val) && not is_arrayref( $_[1] )
+                  		and return push @{$val}, $_[1];
+                	is_hashref($val) and ( is_hashref( $_[1] )
+                  		and return
+                  		map { $config->{$_} = $_[1]->{$_} } keys %{ $_[1] } ) or 
+						(is_scalarref(\$_[1]) and return $val->{$_[1]});
+					$config->{$key} = $_[1] and return;					              
+            	}
+        	};
+		}
     }
 
     return $config;
