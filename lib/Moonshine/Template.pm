@@ -6,6 +6,7 @@ use warnings;
 our $VERSION = '0.02';
 
 use Moonshine::Element;
+use Ref::Util qw/:all/;
 
 our @ISA; BEGIN { @ISA = ('UNIVERSAL::Object') }
 our %HAS; BEGIN {
@@ -17,18 +18,44 @@ our %HAS; BEGIN {
 sub BUILD {
     my ($self, $build_args) = @_;
 
-    my $base_element_args = $build_args->{base_element};
-
-    !$base_element_args and $self->can('base_element')
-        and $base_element_args = $self->base_element;
+    my $config = $self->_build_config;
+    
+    my $base_element_args = $self->_base_element_args(delete $config->{base_element} // $build_args->{base_element});
    
     die "build_html is not defined" unless $self->can('build_html');
-    
+
     my $base_element = $self->build_html($self->add_base_element($base_element_args));
     
     $self->{base_element} = $base_element;
     return;
 };
+
+sub _build_config {
+    my $config;
+    $_[0]->can('config') and $config = $_[0]->config or return {};
+    
+    for my $key (keys %{ $config }) {
+        if (my $template = $config->{$key}->{template}){
+            my $template_args = $config->{$key}->{template_args} // {};
+            $config->{$key}->{template_class} = $template->new($template_args);
+        } 
+
+        {
+            no strict 'refs';
+            *{"$key"} = sub {
+                 return $config->{$key};
+            }
+        };
+    }
+
+    return $config;
+}
+
+sub _base_element_args { 
+    is_hashref($_[1]) and return $_[1] or
+    ! $_[1] and $_[0]->can('base_element') and return $_[0]->base_element or
+    return undef;
+}
 
 sub add_base_element {
     return defined $_[1] ? Moonshine::Element->new($_[1]) : undef;
@@ -36,6 +63,11 @@ sub add_base_element {
 
 sub render {
     return $_[0]->{base_element}->render;
+}
+
+sub _load_class {
+    my $class = shift;
+    return $class->new({});
 }
 
 1; 

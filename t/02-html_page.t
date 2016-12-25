@@ -14,7 +14,7 @@ sub build_html {
     my ($self) = shift;
 
     my $base_element = $self->add_base_element({ tag => "head" });
-    $base_element->add_child({ tag => "title", text => 'Page Title' });
+    $base_element->add_child({ tag => "title", data => ['Page Title'] });
     return $base_element;
 }
 
@@ -45,7 +45,6 @@ our @ISA; BEGIN { @ISA = 'Moonshine::Template' };
 sub base_element {
     return {
         tag     => 'footer',
-        class   => 'content',
     };
 }
 
@@ -62,10 +61,8 @@ our @ISA; BEGIN { @ISA = 'Moonshine::Template' };
 
 sub config {
     return {
-        base_element => {
-            build => { 
-                tag => 'html',
-            }
+        base_element => { 
+            tag => 'html',
         },
         header => {
             action => 'add_child',
@@ -88,8 +85,8 @@ sub config {
 sub build_html {
     my ($self, $base) = @_;
 
-    my $first_body_child = $self->body->children->[0];
-    my $page_header = $first_body_child->add_element_before({ tag => 'h1', data => ['Page Heading']});
+    #my $first_body_child = $self->body->children->[0];
+    #my $page_header = $first_body_child->add_element_before({ tag => 'h1', data => ['Page Heading']});
 
     return $base;
 }
