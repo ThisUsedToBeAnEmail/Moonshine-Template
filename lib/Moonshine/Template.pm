@@ -1,6 +1,6 @@
 package Moonshine::Template;
 
-use strict; 
+use strict;
 use warnings;
 
 our $VERSION = '0.02';
@@ -8,79 +8,90 @@ our $VERSION = '0.02';
 use Moonshine::Element;
 use Ref::Util qw/:all/;
 
-our @ISA; BEGIN { @ISA = ('UNIVERSAL::Object') }
-our %HAS; BEGIN {
-    %HAS = ( 
-        ( map { $_ => sub { undef } } qw/base_element config/ )
+our @ISA;
+BEGIN { @ISA = ('UNIVERSAL::Object') }
+our %HAS;
+
+BEGIN {
+    %HAS = (
+        (
+            map {
+                $_ => sub { undef }
+            } qw/base_element config/
+        )
     );
 }
 
 sub BUILD {
-    my ($self, $build_args) = @_;
+    my ( $self, $build_args ) = @_;
 
     my $config = $self->_build_config;
-    
-    my $base_element_args = $self->_base_element_args(delete $config->{base_element} // $build_args->{base_element});
-   
+
+    my $base_element_args =
+      $self->_base_element_args( delete $config->{base_element}
+          // $build_args->{base_element} );
+
     die "build_html is not defined" unless $self->can('build_html');
 
-    my $base_element = $self->build_html($self->add_base_element($base_element_args));
-    
+    my $base_element =
+      $self->build_html( $self->add_base_element($base_element_args) );
+
     $self->{base_element} = $base_element;
     return;
-};
+}
 
 sub _build_config {
     my $config;
     $_[0]->can('config') and $config = $_[0]->config or return {};
-    
-    for my $key (keys %{ $config }) {
+
+    for my $key ( keys %{$config} ) {
         next if $key eq 'base_element';
-        if (my $template = $config->{$key}->{template}){
+        if ( my $template = $config->{$key}->{template} ) {
             my $template_args = $config->{$key}->{template_args} // {};
             $config->{$key}->{template_class} = $template->new($template_args);
-        } 
+        }
 
         {
-        	no strict 'refs'; no warnings 'redefine';
+            no strict 'refs';
+            no warnings 'redefine';
             {
                 *{"has_$key"} = sub {
-                	my $val = $config->{$key};
-                	defined $val or return undef;
-                	is_arrayref($val) and return scalar @{$val};
-                	is_hashref($val) and return map { $_; }
-                  		sort { $a <=> $b or $a cmp $b }
-                  		keys %{$val};
-                	return 1;
-              	}
+                    my $val = $config->{$key};
+                    defined $val or return undef;
+                    is_arrayref($val) and return scalar @{$val};
+                    is_hashref($val) and return map { $_; }
+                      sort { $a <=> $b or $a cmp $b }
+                      keys %{$val};
+                    return 1;
+                  }
             };
-        	{
-            	*{"$key"} = sub {
-               		my $val = $config->{$key};
-                	defined $_[1] or return $val;
-                	is_arrayref($val) && not is_arrayref( $_[1] )
-                  		and return push @{$val}, $_[1];
-                	is_hashref($val) and ( is_hashref( $_[1] )
-                  		and return
-                  		map { $config->{$_} = $_[1]->{$_} } keys %{ $_[1] } ) or 
-						(is_scalarref(\$_[1]) and return $val->{$_[1]});
-					$config->{$key} = $_[1] and return;					              
-            	}
-        	};
-		}
+            {
+                *{"$key"} = sub {
+                    my $val = $config->{$key};
+                    defined $_[1] or return $val;
+                    is_arrayref($val) && not is_arrayref( $_[1] )
+                      and return push @{$val}, $_[1];
+                    is_hashref($val) and ( is_hashref( $_[1] )
+                        and return
+                        map { $config->{$_} = $_[1]->{$_} } keys %{ $_[1] } )
+                      or ( is_scalarref( \$_[1] ) and return $val->{ $_[1] } );
+                    $config->{$key} = $_[1] and return;
+                  }
+            };
+        }
     }
 
     return $config;
 }
 
-sub _base_element_args { 
-    is_hashref($_[1]) and return $_[1] or
-    ! $_[1] and $_[0]->can('base_element') and return $_[0]->base_element or
-    return undef;
+sub _base_element_args {
+    is_hashref( $_[1] ) and return $_[1]
+      or !$_[1] and $_[0]->can('base_element') and return $_[0]->base_element
+      or return undef;
 }
 
 sub add_base_element {
-    return defined $_[1] ? Moonshine::Element->new($_[1]) : undef;
+    return defined $_[1] ? Moonshine::Element->new( $_[1] ) : undef;
 }
 
 sub render {
@@ -89,10 +100,10 @@ sub render {
 
 sub _load_class {
     my $class = shift;
-    return $class->new({});
+    return $class->new( {} );
 }
 
-1; 
+1;
 
 __END__
 
