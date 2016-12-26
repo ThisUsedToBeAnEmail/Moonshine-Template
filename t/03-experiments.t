@@ -3,7 +3,7 @@ use warnings;
 use Test::More;
 
 BEGIN {
-    use_ok('Moonshine::Template');
+    use_ok('Moonshine::Template1');
 }
 
 no warnings 'redefine';
@@ -11,7 +11,7 @@ no warnings 'redefine';
 package Test::One;
 
 our @ISA;
-BEGIN { @ISA = 'Moonshine::Template' }
+BEGIN { @ISA = 'Moonshine::Template1' }
 
 BEGIN {
     our %HAS = ( thing => sub { "okay" } );
@@ -30,7 +30,7 @@ sub build_html {
 package Test::Two;
 
 our @ISA;
-BEGIN { @ISA = 'Moonshine::Template' }
+BEGIN { @ISA = 'Moonshine::Template1' }
 
 sub config {
     return {
@@ -58,7 +58,7 @@ sub build_html {
 package Test::Three;
 
 our @ISA;
-BEGIN { @ISA = 'Moonshine::Template' }
+BEGIN { @ISA = 'Moonshine::Template1' }
 
 sub config {
     return {
@@ -85,7 +85,7 @@ sub build_html {
 package Test::Four;
 
 our @ISA;
-BEGIN { @ISA = 'Moonshine::Template' }
+BEGIN { @ISA = 'Moonshine::Template1' }
 
 sub config {
     return {

@@ -1,4 +1,4 @@
-package Moonshine::Template;
+package Moonshine::Old;
 
 use strict;
 use warnings;
