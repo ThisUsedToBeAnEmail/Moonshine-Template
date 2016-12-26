@@ -168,7 +168,7 @@ subtest 'test_that_should_always_pass' => sub {
     is_deeply($order, $expected);
 }; 
  
-subtest 'test_that_should_always_pass' => sub {      
+subtest 'test_that_should_always_pass2' => sub {      
     my $base_element;
     my $config = {
         body => {
@@ -251,6 +251,45 @@ subtest 'test_that_should_always_pass' => sub {
     is_deeply($order, $expected);
 };
 
+subtest 'forever_loops' => sub {      
+    my $base_element;
+    my $config = {
+        body => {
+            build => {
+                tag => 'body',
+                children => [
+                    {
+                        tag => 'h1',
+                        data => ['title'],
+                    },
+                    {
+                        tag => 'p',
+                        data => ['some text'],
+                    }
+                ],
+            },
+            action => 'add_after_element',
+            target => 'header',
+        },
+        header => {
+            class => 'Test::Header',
+            action => 'add_child',
+            target => 'base_element',
+        },
+        content => {
+            template => 'Test::Content',
+            target => 'forever',
+        },
+        stash => {
+            one => 'thing',
+            two => 'things',
+        }
+    }; 
+
+    eval { array_order_me($config); };
+    my $error = $@;
+    like($error, qr/content target - forever does not exist in the spec/, "dead - $error");
+};
 
 sub array_order_me {
     my $config = shift;
@@ -258,15 +297,25 @@ sub array_order_me {
     my @configs = ();
     my @keys = keys %{$config};
     my $expected_loop;
+    my $previous;
     while ( @keys ) {
         my $key = shift @keys;
-        
+
         my $value = $config->{$key};
         $value->{action} || $value->{target} || $value->{template} || $value->{build}
             or push @configs, { $key => $value } and next;
          
-        my $target = $value->{target} or unshift @configs, { $key => $value } and next;
-        $target eq 'base_element' and unshift @configs, { $key => $value } and next;
+        $previous && $previous eq $key and 
+            die "$key target - $value->{target} does not exist in the spec" or 
+                $previous = $key;
+
+        my $target = $value->{target} or 
+            unshift @configs, { $key => $value } and 
+                next;
+
+        $target eq 'base_element' and 
+            unshift @configs, { $key => $value } and 
+                next;
         
         my $success = 0;
         if ( my $config_count = scalar @configs ) {
