@@ -3,7 +3,7 @@ use warnings;
 use Test::More;
 
 BEGIN {
-    use_ok('Moonshine::Template1');
+    use_ok('Moonshine::Template');
 }
 
 subtest 'hash' => sub {      
@@ -296,7 +296,6 @@ sub array_order_me {
 
     my @configs = ();
     my @keys = keys %{$config};
-    my $expected_loop;
     my $previous;
     while ( @keys ) {
         my $key = shift @keys;
