@@ -240,10 +240,6 @@ Version 0.2
                 2 => 'some other thing',
                 3 => 'something else',
             },
-            footer => {
-               name => 'lnation',
-               email => 'thisusedtobeanemail@gmail.com',
-            }
         };
     };
 
