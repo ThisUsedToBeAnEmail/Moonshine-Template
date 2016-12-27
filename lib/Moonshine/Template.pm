@@ -60,11 +60,8 @@ sub _process_config {
     for ( @{$ordered_config} ) {
         my $key   = ( keys %{$_} )[0];
         my $value = $_->{$key};
-             $value->{action}
-          || $value->{target}
-          || $value->{template}
-          || $value->{tag}
-          or next;
+
+        grep { defined $value->{$_}, } qw/action target template tag/ or next;
 
         $value->{tag}
           and $config->{$key} = $self->add_base_element($value)
@@ -77,7 +74,7 @@ sub _process_config {
             if ( my $target = $value->{target} ) {
                 my $actual_target =
                   $target eq 'base_element' ? $element : $config->{$target};
-                my $action = $value->{action};
+                my $action = $value->{action} // 'add_child';
                 $actual_target->$action($processed_template_element);
             }
             $config->{$key} = $processed_template_element;
@@ -103,10 +100,7 @@ sub _config_to_arrayref {
 
         my $value = $config->{$key};
 
-             $value->{action}
-          || $value->{target}
-          || $value->{template}
-          || $value->{tag}
+        grep { defined $value->{$_}, } qw/action target template tag/
           or push @configs, { $key => $value }
           and next;
 
