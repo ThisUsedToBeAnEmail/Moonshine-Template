@@ -61,42 +61,33 @@ BEGIN { @ISA = 'Moonshine::Template' }
 
 sub config {
     return {
-        before_build => [
-            {
-                header => {
-                    action   => 'add_child',
-                    template => 'Test::Header',
-                },
-            },
-            {
-                body => {
-                    action   => 'add_after_element',
-                    template => 'Test::Body',
-                    target   => 'header',
-                },
-            },
-            {
-                footer => {
-                    action   => 'add_child',
-                    template => 'Test::Footer',
-                    target   => 'body',
-                },
-            }
-        ],
-        after_build => [],
-        stash => {
-
-
-        }
+        base_element => {
+            tag => 'html'
+        },
+        header => {
+            action   => 'add_child',
+            template => 'Test::Header',
+            target   => 'base_element',
+        },
+        body => {
+            action   => 'add_after_element',
+            template => 'Test::Body',
+            target   => 'header',
+        },
+        footer => {
+            action   => 'add_child',
+            template => 'Test::Footer',
+            target   => 'body',
+        },
     };
 }
 
 sub build_html {
     my ( $self, $base ) = @_;
-=pod
+
     my $first_body_child = $self->body->children->[0];
     my $page_header = $first_body_child->add_before_element({ tag => 'h1', data => ['Page Heading']});
-=cut
+
     return $base;
 }
 
@@ -163,7 +154,7 @@ subtest "build_and_render" => sub {
         {
             class => 'Test::HTML',
             expected =>
-'<html><head><title>Page Title</title></head><body><h1>Page Heading</h1><ul><li class="one">one</li><li class="two">two</li><li class="three">three</li></ul><footer><h1>lnation</h1></footer></body>'
+'<html><head><title>Page Title</title></head><body><h1>Page Heading</h1><ul><li class="one">one</li><li class="two">two</li><li class="three">three</li></ul><footer><h1>lnation</h1></footer></body></html>'
         }
     );
 =pod

@@ -8,12 +8,10 @@ our $VERSION = '0.02';
 use Moonshine::Element;
 use Ref::Util qw/:all/;
 
-
 our @ISA; BEGIN { @ISA = ('UNIVERSAL::Object') }
 our %HAS; BEGIN {
     %HAS = ( 
         base_element => sub { undef },
-        config => sub { undef }
     );
 }
  
@@ -34,7 +32,6 @@ sub BUILD {
      
     $base_element = $self->build_html($base_element);
     
-    $self->{config} = $config;
     $self->{base_element} = $base_element;
     return;
 };
@@ -62,7 +59,19 @@ sub _process_config {
 			or next;
 	
 		$value->{tag} and $config->{$key} = $self->add_base_element($value) and next;		
-	}
+  
+        if (my $template = $value->{template}) {
+            my $template_args = $value->{template_args} // {};
+            my $processed_template_element = $template->new($template_args)->{base_element};
+            if (my $target = $value->{target}) {
+                my $actual_target = $target eq 'base_element' ? $element : $config->{$target};
+                my $action = $value->{action};
+                $actual_target->$action($processed_template_element); 
+            } 
+            $config->{$key} = $processed_template_element;
+        }
+    
+    }
 
 	for ( keys %{ $config } ) {
      	_make_magical_things($_, $config);
@@ -81,6 +90,7 @@ sub _config_to_arrayref {
         my $key = shift @keys;
 
         my $value = $config->{$key};
+        
         $value->{action} || $value->{target} || $value->{template} || $value->{tag}
             or push @configs, { $key => $value } and next;
          
