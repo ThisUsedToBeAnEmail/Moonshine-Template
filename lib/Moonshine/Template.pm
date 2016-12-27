@@ -19,8 +19,7 @@ BEGIN {
 sub BUILD {
     my ( $self, $build_args ) = @_;
 
-    my $config = $build_args->{config} // $self->can('config') && $self->config
-      // {};
+    my $config = $build_args->{config} // $self->can('config') && $self->config;
 
     my $base_element = $self->add_base_element( $build_args->{base_element}
           // delete $config->{base_element} );
