@@ -6,7 +6,6 @@ BEGIN {
     use_ok('Moonshine::Template');
 }
 
-no warnings 'redefine';
 
 package Test::One;
 

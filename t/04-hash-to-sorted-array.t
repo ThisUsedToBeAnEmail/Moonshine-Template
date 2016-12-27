@@ -6,6 +6,27 @@ BEGIN {
     use_ok('Moonshine::Template');
 }
 
+package Test::One;
+
+our @ISA;
+BEGIN { @ISA = 'Moonshine::Template' }
+
+BEGIN {
+    our %HAS = ( thing => sub { "okay" } );
+}
+
+sub build_html {
+    my ($self) = shift;
+
+    my $base_element =
+      $self->add_base_element( { tag => "div", class => "content" } );
+    $base_element->add_child(
+        { tag => "p", class => "testing", data => [ $self->{thing} ] } );
+    return $base_element;
+}
+
+package main;
+
 subtest 'hash' => sub {      
     my $base_element;
     my $config = {
@@ -40,8 +61,9 @@ subtest 'hash' => sub {
         }
     }; 
 
-    my $order = array_order_me($config);
-    
+    my $template = Test::One->new;
+    my $order = $template->_config_to_arrayref($config);
+
     my $expected = [
         {
             content => {
@@ -120,7 +142,8 @@ subtest 'test_that_should_always_pass' => sub {
         }
     }; 
 
-    my $order = array_order_me($config);
+	my $template = Test::One->new;
+    my $order = $template->_config_to_arrayref($config);
     
     my $expected = [
         {
@@ -203,7 +226,8 @@ subtest 'test_that_should_always_pass2' => sub {
         }
     }; 
 
-    my $order = array_order_me($config);
+    my $template = Test::One->new;
+    my $order = $template->_config_to_arrayref($config);
     
     my $expected = [
         {
@@ -285,54 +309,12 @@ subtest 'forever_loops' => sub {
             two => 'things',
         }
     }; 
-
-    eval { array_order_me($config); };
+             
+    my $template = Test::One->new;
+    eval { $template->_config_to_arrayref($config) };
     my $error = $@;
     like($error, qr/content target - forever does not exist in the spec/, "dead - $error");
 };
-
-sub array_order_me {
-    my $config = shift;
-
-    my @configs = ();
-    my @keys = keys %{$config};
-    my $previous;
-    while ( @keys ) {
-        my $key = shift @keys;
-
-        my $value = $config->{$key};
-        $value->{action} || $value->{target} || $value->{template} || $value->{build}
-            or push @configs, { $key => $value } and next;
-         
-        $previous && $previous eq $key and 
-            die "$key target - $value->{target} does not exist in the spec" or 
-                $previous = $key;
-
-        my $target = $value->{target} or 
-            unshift @configs, { $key => $value } and 
-                next;
-
-        $target eq 'base_element' and 
-            unshift @configs, { $key => $value } and 
-                next;
-        
-        my $success = 0;
-        if ( my $config_count = scalar @configs ) {
-            for (my $index=0; $index < $config_count; $index++) {
-                if (my $target_found = $configs[$index]->{$target}) {
-                    splice @configs, $index + 1, 0, { $key => $value };
-                    $success = 1;
-                    last;
-                }
-            }
-        }
-        unless ($success) {
-            push @keys, $key;
-        }
-    }
-
-    return \@configs;
-}
 
 done_testing();
 

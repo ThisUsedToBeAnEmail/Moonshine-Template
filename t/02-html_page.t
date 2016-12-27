@@ -115,13 +115,13 @@ sub build_html {
     my ( $self, $base ) = @_;
 
     my $header = $base->add_child( { tag => 'head' } );
-    my $page_title =
-      $header->add_child( { tag => 'title', data => ['Page Title'] } );
+    my $page_title = $header->add_child( { tag => 'title', data => ['Page Title'] } );
     my $body = $base->add_child( $self->body );
 
     my $first_body_child = $body->children->[0];
     my $page_header      = $first_body_child->add_before_element(
-        { tag => 'h1', data => ['Page Header'] } );
+        { tag => 'h1', data => ['Page Heading'] } 
+    );
 
     my $footer = $body->add_child( $self->footer );
 
@@ -157,15 +157,13 @@ subtest "build_and_render" => sub {
 '<html><head><title>Page Title</title></head><body><h1>Page Heading</h1><ul><li class="one">one</li><li class="two">two</li><li class="three">three</li></ul><footer><h1>lnation</h1></footer></body></html>'
         }
     );
-=pod
     build_and_render(
         {
             class => 'Test::HTML2',
             expected =>
-'<html><head><title>Page Title</title></head><body><h1>Page Heading</h1><ul><li class="one">one</li><li class="two">two</li><li class="three">three</li></ul><footer><h1>lnation</h1></footer></body>'
+'<html><head><title>Page Title</title></head><body><h1>Page Heading</h1><ul><li class="one">one</li><li class="two">two</li><li class="three">three</li></ul><footer><h1>lnation</h1></footer></body></html>'
         }
     );
-=cut
 };
 
 sub build_and_render {

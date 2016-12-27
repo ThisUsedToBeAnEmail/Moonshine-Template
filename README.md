@@ -4,7 +4,7 @@ Moonshine::Template - Template some more html.
 
 # VERSION
 
-Version 0.1 
+Version 0.2 
 
 # SYNOPSIS
 
@@ -35,6 +35,7 @@ Version 0.1
        
        sub build_html {
            my ($self, $base) = @_;
+           ...
        }                          
 
 
@@ -43,8 +44,75 @@ Version 0.1
           my $self = shift; 
 
           my $base = $self->add_base_element({ tag => 'div' });
-          .....
+          ...
        }
+              
+       package My::Template;
+
+       My::Template->new( config => ... );
+
+       sub config { 
+           return {
+               header => {
+                   title => 'Page1',
+                   content => 'just a hash',
+               },
+               body => {
+                  paragraph1 => 'something something',
+               },
+               content => {
+                   1 => 'some more content',
+                   2 => 'some other thing',
+                   3 => 'something else',
+               },
+               footer => {
+                  name => 'lnation',
+                  email => 'thisusedtobeanemail@gmail.com',
+               }
+           };
+       };
+
+       sub build_html {
+           my ($self, $base) = @_;
+
+           $base->add_child($self->header->{title});
+           ....
+       }
+      
+       ......          
+
+       package Test::Template;
+
+       sub config {
+           return {
+               base_element => {
+                   tag => 'html',
+               },
+               header => {
+                   template => 'Test::Header',
+                   template_args => {
+                       title => 'Some title',
+                       content => {
+                           paragraph1 => 'some more text',
+                       }
+                   },
+                   target => 'base_element'
+               },
+               body => {
+                   template => 'Test::Body',
+                   template_args => {
+                       content => 'Some more text',
+                   },
+                   action => 'add_after_element',
+                   target => 'header',
+               },
+               footer => {
+                   target => 'body',
+                   action => 'add_child',
+                   ....
+               }
+           };
+       }          
 
 # Template
 
@@ -54,8 +122,7 @@ Required - Your entry point to build some templated html.
 
 ## base\_element
 
-Optional - Please return a HashRef because it's used to build 
-the base element - look here - `Moonshine::Element`.
+Required - look here - [Moonshine::Element](https://metacpan.org/pod/Moonshine::Element).
 
 # Render
 

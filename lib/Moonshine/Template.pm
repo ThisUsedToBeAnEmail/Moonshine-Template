@@ -54,7 +54,7 @@ sub render {
 sub _process_config {
     my ( $self, $config, $element ) = @_;
 
-    my $ordered_config = _config_to_arrayref($config);
+    my $ordered_config = $self->_config_to_arrayref($config);
 
     for ( @{$ordered_config} ) {
         my $key   = ( keys %{$_} )[0];
@@ -82,14 +82,14 @@ sub _process_config {
     }
 
     for ( keys %{$config} ) {
-        _make_magical_things( $_, $config );
+        _make_shine( $_, $config );
     }
 
     return $config;
 }
 
 sub _config_to_arrayref {
-    my $config = shift;
+    my ( $self, $config ) = @_;
 
     my @configs = ();
     my @keys    = keys %{$config};
@@ -133,7 +133,7 @@ sub _config_to_arrayref {
     return \@configs;
 }
 
-sub _make_magical_things {
+sub _make_shine {
     my ( $key, $config ) = @_;
 
     {
@@ -183,99 +183,6 @@ Version 0.2
 
 =head1 SYNOPSIS
 
-    My::Template->new( config => ... );
-
-    sub config { 
-        return ...
-    }
-
-    ......
-
-    my $config = { 
-        header => {
-           title => 'Page1',
-           content => 'just a hash',
-        },
-        body => {
-           paragraph1 => 'something something',
-           content => {
-               one => 'some more content some content',
-               two => 'some other thing',
-               three => 'something else',
-           },
-        },
-        footer => {
-           name => 'lnation',
-           email => 'thisusedtobeanemail@gmail.com',
-        }
-    };
-
-    sub build_html {
-        my ($self, $base) = @_;
-
-        my $header = $self->header;
-        $base->add_child($header->{title});
-        ....
-    }
-   
-    ......          
-
-    my $config = {
-        header => {
-            class => 'Test::Header',
-            args => {
-                title => 'Some title',
-                content => {
-                    paragraph1 => 'some more text',
-                }
-            },
-        },
-        body => {
-            class => 'Test::Body',
-            args => {
-                content => 'Some more text',
-            },
-            action => 'add_after_element',
-            target => 'header',
-        },
-        footer => {
-            ....
-        }
-    };
-
-    which i'll have to process like ....
-
-    my $config = [
-        {
-            header => {
-                class => 'Test::Header',
-                args => {
-                    title => 'some title',
-                    content => {
-                        paragraph1 => 'some more text',
-                    }
-                },
-            },
-        },
-        {
-            body => {
-                class => 'Test::Body',
-                args => {
-                    content => 'Some more content',
-                    ....
-                }
-                action => 'add_after_element',
-                target => 'header',
-            },
-        },
-        {
-            footer => {
-                ....
-            }
-        },
-    };
-
-
     package MyApp::Template::World
 
     our @ISA; BEGIN { @ISA = 'Moonshine::Template' }
@@ -314,6 +221,73 @@ Version 0.2
        my $base = $self->add_base_element({ tag => 'div' });
        ...
     }
+           
+    package My::Template;
+
+    My::Template->new( config => ... );
+
+    sub config { 
+        return {
+            header => {
+                title => 'Page1',
+                content => 'just a hash',
+            },
+            body => {
+               paragraph1 => 'something something',
+            },
+            content => {
+                1 => 'some more content',
+                2 => 'some other thing',
+                3 => 'something else',
+            },
+            footer => {
+               name => 'lnation',
+               email => 'thisusedtobeanemail@gmail.com',
+            }
+        };
+    };
+
+    sub build_html {
+        my ($self, $base) = @_;
+
+        $base->add_child($self->header->{title});
+        ....
+    }
+   
+    ......          
+
+    package Test::Template;
+
+    sub config {
+        return {
+            base_element => {
+                tag => 'html',
+            },
+            header => {
+                template => 'Test::Header',
+                template_args => {
+                    title => 'Some title',
+                    content => {
+                        paragraph1 => 'some more text',
+                    }
+                },
+                target => 'base_element'
+            },
+            body => {
+                template => 'Test::Body',
+                template_args => {
+                    content => 'Some more text',
+                },
+                action => 'add_after_element',
+                target => 'header',
+            },
+            footer => {
+                target => 'body',
+                action => 'add_child',
+                ....
+            }
+        };
+    }          
 
 
 =head1 Template
