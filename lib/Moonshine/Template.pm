@@ -8,108 +8,124 @@ our $VERSION = '0.02';
 use Moonshine::Element;
 use Ref::Util qw/:all/;
 
-our @ISA; BEGIN { @ISA = ('UNIVERSAL::Object') }
-our %HAS; BEGIN {
-    %HAS = ( 
-        base_element => sub { undef },
-    );
-}
- 
-sub BUILD {
-    my ($self, $build_args) = @_;
- 
-    my $config = $build_args->{config} // $self->can('config') && $self->config // {};
+our @ISA;
+BEGIN { @ISA = ('UNIVERSAL::Object') }
+our %HAS;
 
-    my $base_element = $self->add_base_element(
-        $build_args->{base_element} // delete $config->{base_element}
-    );
-    
-    if (defined $config) {
-        $config = $self->_process_config($config, $base_element);
+BEGIN {
+    %HAS = ( base_element => sub { undef }, );
+}
+
+sub BUILD {
+    my ( $self, $build_args ) = @_;
+
+    my $config = $build_args->{config} // $self->can('config') && $self->config
+      // {};
+
+    my $base_element = $self->add_base_element( $build_args->{base_element}
+          // delete $config->{base_element} );
+
+    if ( defined $config ) {
+        $config = $self->_process_config( $config, $base_element );
     }
 
     die "build_html is not defined" unless $self->can('build_html');
-     
+
     $base_element = $self->build_html($base_element);
-    
+
     $self->{base_element} = $base_element;
     return;
-};
- 
-sub add_base_element {
-    my ($self, $base_element_args) = @_; 
-    !$base_element_args and $self->can('base_element')
-        and $base_element_args = $self->base_element;
-    return defined $base_element_args ? Moonshine::Element->new($base_element_args) : undef;
 }
- 
+
+sub add_base_element {
+    my ( $self, $base_element_args ) = @_;
+    !$base_element_args
+      and $self->can('base_element')
+      and $base_element_args = $self->base_element;
+    return
+      defined $base_element_args
+      ? Moonshine::Element->new($base_element_args)
+      : undef;
+}
+
 sub render {
     return $_[0]->{base_element}->render;
 }
 
 sub _process_config {
-    my ($self, $config, $element) = @_;
+    my ( $self, $config, $element ) = @_;
 
     my $ordered_config = _config_to_arrayref($config);
 
-	for (@{ $ordered_config }) {
-     	my $key = (keys %{$_})[0];
-		my $value = $_->{$key};
-        $value->{action} || $value->{target} || $value->{template} || $value->{tag}
-			or next;
-	
-		$value->{tag} and $config->{$key} = $self->add_base_element($value) and next;		
-  
-        if (my $template = $value->{template}) {
+    for ( @{$ordered_config} ) {
+        my $key   = ( keys %{$_} )[0];
+        my $value = $_->{$key};
+             $value->{action}
+          || $value->{target}
+          || $value->{template}
+          || $value->{tag}
+          or next;
+
+        $value->{tag}
+          and $config->{$key} = $self->add_base_element($value)
+          and next;
+
+        if ( my $template = $value->{template} ) {
             my $template_args = $value->{template_args} // {};
-            my $processed_template_element = $template->new($template_args)->{base_element};
-            if (my $target = $value->{target}) {
-                my $actual_target = $target eq 'base_element' ? $element : $config->{$target};
+            my $processed_template_element =
+              $template->new($template_args)->{base_element};
+            if ( my $target = $value->{target} ) {
+                my $actual_target =
+                  $target eq 'base_element' ? $element : $config->{$target};
                 my $action = $value->{action};
-                $actual_target->$action($processed_template_element); 
-            } 
+                $actual_target->$action($processed_template_element);
+            }
             $config->{$key} = $processed_template_element;
         }
-    
+
     }
 
-	for ( keys %{ $config } ) {
-     	_make_magical_things($_, $config);
-	}
+    for ( keys %{$config} ) {
+        _make_magical_things( $_, $config );
+    }
 
-	return $config;
+    return $config;
 }
 
 sub _config_to_arrayref {
     my $config = shift;
 
     my @configs = ();
-    my @keys = keys %{$config};
+    my @keys    = keys %{$config};
     my $previous;
-    while ( @keys ) {
+    while (@keys) {
         my $key = shift @keys;
 
         my $value = $config->{$key};
-        
-        $value->{action} || $value->{target} || $value->{template} || $value->{tag}
-            or push @configs, { $key => $value } and next;
-         
-        $previous && $previous eq $key and 
-            die "$key target - $value->{target} does not exist in the spec" or 
-                $previous = $key;
 
-        my $target = $value->{target} or 
-            unshift @configs, { $key => $value } and 
-                next;
+             $value->{action}
+          || $value->{target}
+          || $value->{template}
+          || $value->{tag}
+          or push @configs, { $key => $value }
+          and next;
 
-        $target eq 'base_element' and 
-            unshift @configs, { $key => $value } and 
-                next;
-        
+        $previous && $previous eq $key
+          and die "$key target - $value->{target} does not exist in the spec"
+          or $previous = $key;
+
+        my $target = $value->{target}
+          or unshift @configs, { $key => $value }
+          and next;
+
+        $target eq 'base_element'
+          and unshift @configs, { $key => $value }
+          and next;
+
         my $success = 0;
         if ( my $config_count = scalar @configs ) {
-            for (my $index=0; $index < $config_count; $index++) {
-                if (my $target_found = $configs[$index]->{$target}) {
+            for ( my $index = 0 ; $index < $config_count ; $index++ ) {
+                if ( my $target_found = $configs[$index]->{$target} ) {
                     splice @configs, $index + 1, 0, { $key => $value };
                     $success = 1;
                     last;
@@ -125,12 +141,12 @@ sub _config_to_arrayref {
 }
 
 sub _make_magical_things {
- 	my ($key, $config) = @_;
+    my ( $key, $config ) = @_;
 
-   {
+    {
         no strict 'refs';
         no warnings 'redefine';
-		{
+        {
             *{"has_$key"} = sub {
                 my $val = $config->{$key};
                 defined $val or return undef;
@@ -159,8 +175,7 @@ sub _make_magical_things {
     return 1;
 }
 
-
-1; 
+1;
 
 __END__
 
