@@ -53,15 +53,13 @@ sub render {
 sub _process_config {
     my ( $self, $config, $element ) = @_;
 
-    my $ordered_config = $self->_config_to_arrayref($config);
+    my $make_action_config = $self->_config_to_actions($config);
 
-    for ( @{$ordered_config} ) {
+    for ( @{$make_action_config} ) {
         my $key   = ( keys %{$_} )[0];
         my $value = $_->{$key};
 
-        grep { defined $value->{$_} } qw/action target template tag build/ or next;
-
-        $value->{tag}
+        defined $value->{tag}
           and $config->{$key} = $self->add_base_element($value)
           and next;
 
@@ -81,7 +79,6 @@ sub _process_config {
             }
             $config->{$key} = $processed_element;    
        }
-
     }
 
     for ( keys %{$config} ) {
@@ -91,7 +88,7 @@ sub _process_config {
     return $config;
 }
 
-sub _config_to_arrayref {
+sub _config_to_actions {
     my ( $self, $config ) = @_;
 
     my @configs = ();
@@ -99,12 +96,10 @@ sub _config_to_arrayref {
     my $previous;
     while (@keys) {
         my $key = shift @keys;
-
         my $value = $config->{$key};
 
-        grep { defined $value->{$_} } qw/action target template tag/
-          or push @configs, { $key => $value }
-          and next;
+        grep { defined $value->{$_} } qw/action target template tag build/
+          or next;
 
         $previous && $previous eq $key
           and die "$key target - $value->{target} does not exist in the spec"
@@ -123,8 +118,7 @@ sub _config_to_arrayref {
             for ( my $index = 0 ; $index < $config_count ; $index++ ) {
                 if ( my $target_found = $configs[$index]->{$target} ) {
                     splice @configs, $index + 1, 0, { $key => $value };
-                    $success = 1;
-                    last;
+                    $success = 1 and last;
                 }
             }
         }

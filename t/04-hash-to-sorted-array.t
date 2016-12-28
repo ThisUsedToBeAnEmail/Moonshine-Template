@@ -48,7 +48,7 @@ subtest 'hash' => sub {
             target => 'header',
         },
         header => {
-            class => 'Test::Header',
+            template => 'Test::Header',
             action => 'add_child',
             target => 'base_element',
         },
@@ -62,7 +62,7 @@ subtest 'hash' => sub {
     }; 
 
     my $template = Test::One->new;
-    my $order = $template->_config_to_arrayref($config);
+    my $order = $template->_config_to_actions($config);
 
     my $expected = [
         {
@@ -72,7 +72,7 @@ subtest 'hash' => sub {
         },
         {
             header => {
-                class => 'Test::Header',
+                template => 'Test::Header',
                 action => 'add_child',
                 target => 'base_element',
             },
@@ -128,7 +128,7 @@ subtest 'test_that_should_always_pass' => sub {
             target => 'header',
         },
         header => {
-            class => 'Test::Header',
+            template => 'Test::Header',
             action => 'add_child',
             target => 'content',
         },
@@ -143,7 +143,7 @@ subtest 'test_that_should_always_pass' => sub {
     }; 
 
 	my $template = Test::One->new;
-    my $order = $template->_config_to_arrayref($config);
+    my $order = $template->_config_to_actions($config);
     
     my $expected = [
         {
@@ -154,7 +154,7 @@ subtest 'test_that_should_always_pass' => sub {
         },
         {
             header => {
-                class => 'Test::Header',
+                template => 'Test::Header',
                 action => 'add_child',
                 target => 'content',
             },
@@ -178,12 +178,6 @@ subtest 'test_that_should_always_pass' => sub {
                 target => 'header',
             }, 
         },
-        {
-            stash => {
-                one => 'thing',
-                two => 'things',
-            } 
-        }
     ];
     
     diag explain $order;
@@ -227,7 +221,7 @@ subtest 'test_that_should_always_pass2' => sub {
     }; 
 
     my $template = Test::One->new;
-    my $order = $template->_config_to_arrayref($config);
+    my $order = $template->_config_to_actions($config);
     
     my $expected = [
         {
@@ -262,12 +256,6 @@ subtest 'test_that_should_always_pass2' => sub {
                 target => 'body',
             }
         },
-        {
-            stash => {
-                one => 'thing',
-                two => 'things',
-            } 
-        }
     ];
     
     diag explain $order;
@@ -311,7 +299,7 @@ subtest 'forever_loops' => sub {
     }; 
              
     my $template = Test::One->new;
-    eval { $template->_config_to_arrayref($config) };
+    eval { $template->_config_to_actions($config) };
     my $error = $@;
     like($error, qr/content target - forever does not exist in the spec/, "dead - $error");
 };
