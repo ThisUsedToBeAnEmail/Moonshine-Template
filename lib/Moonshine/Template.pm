@@ -8,12 +8,11 @@ our $VERSION = '0.02';
 use Moonshine::Element;
 use Ref::Util qw/:all/;
 
-our @ISA;
-BEGIN { @ISA = ('UNIVERSAL::Object') }
-our %HAS;
+our @ISA; BEGIN { @ISA = ('UNIVERSAL::Object') }
 
+our %HAS;
 BEGIN {
-    %HAS = ( base_element => sub { undef }, );
+    %HAS = ( base_element => sub { undef } );
 }
 
 sub BUILD {
@@ -60,24 +59,28 @@ sub _process_config {
         my $key   = ( keys %{$_} )[0];
         my $value = $_->{$key};
 
-        grep { defined $value->{$_}, } qw/action target template tag/ or next;
+        grep { defined $value->{$_} } qw/action target template tag build/ or next;
 
         $value->{tag}
           and $config->{$key} = $self->add_base_element($value)
           and next;
 
-        if ( my $template = $value->{template} ) {
+        my $processed_element;
+        if ( defined $value->{template} ) {
             my $template_args = $value->{template_args} // {};
-            my $processed_template_element =
-              $template->new($template_args)->{base_element};
-            if ( my $target = $value->{target} ) {
-                my $actual_target =
-                  $target eq 'base_element' ? $element : $config->{$target};
-                my $action = $value->{action} // 'add_child';
-                $actual_target->$action($processed_template_element);
-            }
-            $config->{$key} = $processed_template_element;
+            $processed_element = $value->{template}->new($template_args)->{base_element};
+        } elsif ( defined $value->{build} ) {
+            $processed_element = $self->add_base_element($value->{build});
         }
+
+        if ( defined $processed_element ) {
+            if ( defined $value->{target} ) {
+                my $target = $value->{target} eq 'base_element' ? $element : $config->{$value->{target}};
+                my $action = $value->{action} // 'add_child';
+                $target->$action($processed_element);
+            }
+            $config->{$key} = $processed_element;    
+       }
 
     }
 
@@ -99,7 +102,7 @@ sub _config_to_arrayref {
 
         my $value = $config->{$key};
 
-        grep { defined $value->{$_}, } qw/action target template tag/
+        grep { defined $value->{$_} } qw/action target template tag/
           or push @configs, { $key => $value }
           and next;
 

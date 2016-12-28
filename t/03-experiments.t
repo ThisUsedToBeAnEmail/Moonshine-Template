@@ -109,6 +109,37 @@ sub build_html {
     return $base;
 }
 
+package Test::Five;
+
+our @ISA; BEGIN { @ISA = 'Moonshine::Template' }
+
+sub config {
+    return {
+        base_element => {
+            tag => 'div',
+        },
+        content => {
+            build => {
+                tag => 'div',
+            },
+            action => 'add_child',
+            target => 'base_element',
+        },
+        paragraph => {
+            build => {
+                tag => 'p',
+                data => [ 'some text' ],
+            },
+            action => 'add_child',
+            target => 'content',
+        },
+    };
+}
+
+sub build_html {
+    return $_[1];
+}
+
 package main;
 
 subtest 'okay' => sub {
@@ -136,6 +167,12 @@ subtest 'okay' => sub {
             expected => '<div><div><p>some text</p></div></div>'
         }
     );
+    build_and_render(
+        {
+            class    => 'Test::Five',
+            expected => '<div><div><p>some text</p></div></div>'
+        }
+    ); 
 };
 
 sub build_and_render {
