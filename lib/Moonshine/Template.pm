@@ -53,9 +53,9 @@ sub render {
 sub _process_config {
     my ( $self, $config, $element ) = @_;
 
-    my $make_action_config = $self->_config_to_actions($config);
+    my $action_config = $self->_config_to_actions($config);
 
-    for ( @{$make_action_config} ) {
+    for ( @{$action_config} ) {
         my $key   = ( keys %{$_} )[0];
         my $value = $_->{$key};
 

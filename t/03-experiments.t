@@ -140,6 +140,60 @@ sub build_html {
     return $_[1];
 }
 
+package Test::Six;
+
+our @ISA; BEGIN { @ISA = 'Moonshine::Template' }
+
+sub config {
+    return {
+        base_element => {
+            tag => 'div',
+        },
+        content => {
+            template => 'Test::Five',
+            template_args => {
+                config => {
+                    paragraph => {
+                        build => {
+                            data => ['some other text'],
+                        }
+                    }
+                }
+            },
+            target => 'base_element',
+        }
+    };
+}
+    
+sub build_html {
+    return $_[1];
+}
+
+package Test::Seven;
+
+our @ISA; BEGIN { @ISA = 'Moonshine::Template' }
+
+sub config {
+    return {
+        base_element => {
+            template => 'Test::Five',
+            template_args => {
+                config => {
+                    paragraph => {
+                        build => {
+                            data => ['some other text'],
+                        }
+                    }
+                } 
+            }
+        }
+    };
+}
+
+sub build_html {
+    return $_[1];
+}
+
 package main;
 
 subtest 'okay' => sub {
@@ -172,7 +226,19 @@ subtest 'okay' => sub {
             class    => 'Test::Five',
             expected => '<div><div><p>some text</p></div></div>'
         }
-    ); 
+    );
+    build_and_render(
+        {
+            class   => 'Test::Six',
+            expected => '<div><div><div><p>some other text</p></div></div></div>',
+        }
+    );
+    build_and_render(
+        {
+            class   => 'Test::Seven',
+            expected => '<div><div><p>some other text</p></div></div>',
+        }
+    );
 };
 
 sub build_and_render {
