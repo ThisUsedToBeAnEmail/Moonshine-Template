@@ -246,7 +246,7 @@ sub build_and_render {
 
     ok( my $class = $args->{class}->new( $args->{args} // {} ) );
     is( $class->render, $args->{expected},
-        "render some html - $args->{expected}" );
+        "render some html $args->{class} - $args->{expected}" );
 }
 
 sub build_and_die {

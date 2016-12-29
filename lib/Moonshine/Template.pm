@@ -7,6 +7,7 @@ our $VERSION = '0.02';
 
 use Moonshine::Element;
 use Ref::Util qw/:all/;
+use Hash::Merge qw/merge/;
 
 our @ISA; BEGIN { @ISA = ('UNIVERSAL::Object') }
 
@@ -18,7 +19,7 @@ BEGIN {
 sub BUILD {
     my ( $self, $build_args ) = @_;
 
-    my $config = $build_args->{config} // $self->can('config') && $self->config;
+    my $config = $self->_merge_configs($build_args->{config} // {});
 
     my $base_element = $self->add_base_element( $build_args->{base_element}
           // delete $config->{base_element} );
@@ -49,6 +50,12 @@ sub add_base_element {
 sub render {
     return $_[0]->{base_element}->render;
 }
+ 
+sub _merge_configs {
+    my ($self, $build_config) = (shift, shift);
+    my $base_config = $self->can('config') && $self->config // {};
+    return merge($build_config, $base_config);
+} 
 
 sub _process_config {
     my ( $self, $config, $element ) = @_;
