@@ -6,10 +6,6 @@ Moonshine::Template - Template some more html.
 
 Version 0.03 
 
-# DESCRIPTION
-
-Logic will get you from A to B. Imagination will take you everywhere.
-
 # SYNOPSIS
 
        package MyApp::Template::World

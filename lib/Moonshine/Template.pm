@@ -31,13 +31,14 @@ sub BUILD {
     }
 
     die "build_html is not defined" unless $self->can('build_html');
-    
-    if (is_blessed_ref($base_element)) {
+
+    if ( is_blessed_ref($base_element) ) {
         $self->{base_element} = $base_element;
     }
 
-    $base_element = $self->build_html($self->_return_base_element($base_element));
-    
+    $base_element =
+      $self->build_html( $self->_return_base_element($base_element) );
+
     $self->{base_element} = $base_element;
 
     return;
@@ -46,8 +47,8 @@ sub BUILD {
 sub add_base_element {
     my ( $self, $base_element_args ) = @_;
 
-    if ($self->can('base_element')){
-        $base_element_args = merge($self->base_element, $base_element_args);
+    if ( $self->can('base_element') ) {
+        $base_element_args = merge( $self->base_element, $base_element_args );
     }
 
     if ( is_hashref($base_element_args) ) {
@@ -66,12 +67,12 @@ sub render {
 }
 
 sub children {
-    my $element = $_[0]->_return_base_element($_[0]->{base_element});
+    my $element = $_[0]->_return_base_element( $_[0]->{base_element} );
     return $element->{children};
 }
 
 sub element {
-    return $_[0]->_return_base_element($_[0]->{base_element});
+    return $_[0]->_return_base_element( $_[0]->{base_element} );
 }
 
 sub _merge_configs {
@@ -88,17 +89,20 @@ sub _process_config {
     for ( @{$action_config} ) {
         my $key   = ( keys %{$_} )[0];
         my $value = $_->{$key};
-        
-        my $processed_element = $self->add_base_element($value->{build} ? $value->{build} : $value);
+
+        my $processed_element =
+          $self->add_base_element( $value->{build} ? $value->{build} : $value );
 
         if ( is_blessed_ref($processed_element) ) {
             if ( defined $value->{target} ) {
                 my $target =
                     $value->{target} eq 'base_element'
                   ? $self->_return_base_element($element)
-                  : $self->_return_base_element($config->{ $value->{target} });
+                  : $self->_return_base_element(
+                    $config->{ $value->{target} } );
                 my $action = $value->{action} // 'add_child';
-                $target->$action($self->_return_base_element($processed_element));
+                $target->$action(
+                    $self->_return_base_element($processed_element) );
             }
             $config->{$key} = $processed_element;
         }
@@ -204,10 +208,6 @@ Moonshine::Template - Template some more html.
 =head1 VERSION
 
 Version 0.03 
-
-=head1 DESCRIPTION
-
-Logic will get you from A to B. Imagination will take you everywhere.
 
 =head1 SYNOPSIS
 
