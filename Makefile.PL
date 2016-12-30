@@ -20,7 +20,9 @@ WriteMakefile(
     },
     PREREQ_PM => {
     	'Moonshine::Element' => '0.03',
-	    'UNIVERSAL::Object' => '0.02',
+	    'UNIVERSAL::Object' => '0.04',
+        'Ref::Util' => '0.101',
+        'Hash::Merge' => '0.200',
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'Moonshine-Template-*' },

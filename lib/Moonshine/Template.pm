@@ -3,7 +3,7 @@ package Moonshine::Template;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use Moonshine::Element;
 use Ref::Util qw/:all/;
@@ -203,8 +203,11 @@ Moonshine::Template - Template some more html.
 
 =head1 VERSION
 
-Version 0.2 
+Version 0.03 
 
+=head1 DESCRIPTION
+
+Logic will get you from A to B. Imagination will take you everywhere.
 
 =head1 SYNOPSIS
 
@@ -246,70 +249,97 @@ Version 0.2
        my $base = $self->add_base_element({ tag => 'div' });
        ...
     }
-           
-    package My::Template;
+       
+	package Test::HTML;
 
-    My::Template->new( config => ... );
+	our @ISA;
+	BEGIN { @ISA = 'Moonshine::Template' }
 
-    sub config { 
-        return {
-            header => {
-                title => 'Page1',
-                content => 'just a hash',
-            },
-            body => {
-               paragraph1 => 'something something',
-            },
-            content => {
-                1 => 'some more content',
-                2 => 'some other thing',
-                3 => 'something else',
-            },
-        };
-    };
+	sub config {
+		return {
+			base_element => {
+				tag => 'html',
+			},
+			header => {
+				build => {
+					tag => 'head',
+				},
+				target => 'base_element',
+			},
+			page_title => {
+				build => {
+					tag  => 'title',
+					data => 'Page Title',
+				},
+				target => 'header',
+			},
+			body => {
+				build => {
+					tag => 'body',
+				},
+				action => 'add_after_element',
+				target => 'header',
+			},
+		};
+	}
 
-    sub build_html {
-        my ($self, $base) = @_;
+	sub build_html {
+		return $_[1];
+	}
 
-        $base->add_child($self->header->{title});
-        ....
-    }
-   
-    ......          
+	package Test::HTML::Content;
 
-    package Test::Template;
+	our @ISA;
+	BEGIN { @ISA = 'Moonshine::Template' }
 
-    sub config {
-        return {
-            base_element => {
-                tag => 'html',
-            },
-            header => {
-                template => 'Test::Header',
-                template_args => {
-                    title => 'Some title',
-                    content => {
-                        paragraph1 => 'some more text',
-                    }
-                },
-                target => 'base_element'
-            },
-            body => {
-                template => 'Test::Body',
-                template_args => {
-                    content => 'Some more text',
-                },
-                action => 'add_after_element',
-                target => 'header',
-            },
-            footer => {
-                target => 'body',
-                action => 'add_child',
-                ....
-            }
-        };
-    }          
+	sub config {
+		return {
+			base_element => {
+				tag => 'div',
+			},
+			title => {
+				tag  => 'h1',
+				data => 'Hello World',
+			},
+			description => {
+				tag  => 'p',
+				data => 'No, it will not make you blind.'
+			}
+		};
+	}
 
+	sub build_html {
+		my ( $self, $base ) = @_;
+
+		$base->add_child( $self->title );
+		$base->add_child( $self->description );
+		return $base;
+	}
+
+	package Test::HTML::Wrapper;
+
+	our @ISA;
+	BEGIN { @ISA = 'Moonshine::Template' }
+
+	sub config {
+		return {
+			base_element => {
+				template      => 'Test::HTML',
+				template_args => {
+					config => {
+						content => {
+							template => 'Test::HTML::Content',
+							target   => 'body',
+						}
+					}
+				}
+			}
+		};
+	}
+
+	sub build_html {
+		return $_[1];
+	}
 
 =head1 Template
 
@@ -320,13 +350,28 @@ Required - Your entry point to build some templated html.
 =head2 base_element
 
 Required - look here - L<Moonshine::Element>.
+
+=head2 config
+
+Optional - use with care.
   
 =head1 Render
 
-    my $html = MyApp::Template::World->new->render;
-    ....
-    <div class="content"><ul><li class="one">one</li><li class="two">two</li><li
-    class="three">three</li></ul></div>
+    my $html = Test::HTML::Wrapper->new->render;
+    
+	....
+	<html>
+		<head>
+			<title>Page Title</title>
+		</head>
+		<body>
+			<div>
+				<h1>Hello World</h1>
+				<p>No, it will not make you blind.</p>
+			</div>
+		</body>
+	</html>
+
 
 =head1 AUTHOR
 
