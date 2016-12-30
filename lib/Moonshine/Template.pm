@@ -248,6 +248,7 @@ Version 0.03
 
        my $base = $self->add_base_element({ tag => 'div' });
        ...
+       return $base;
     }
        
 	package Test::HTML;
