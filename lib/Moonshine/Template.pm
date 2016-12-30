@@ -31,10 +31,15 @@ sub BUILD {
     }
 
     die "build_html is not defined" unless $self->can('build_html');
+    
+    if (is_blessed_ref($base_element)) {
+        $self->{base_element} = $base_element;
+    }
 
-    $base_element = $self->build_html($base_element);
-
+    $base_element = $self->build_html($self->_return_base_element($base_element));
+    
     $self->{base_element} = $base_element;
+
     return;
 }
 
@@ -49,7 +54,7 @@ sub add_base_element {
         return
           defined $base_element_args->{template}
           ? $base_element_args->{template}
-          ->new( $base_element_args->{template_args} // {} )->{base_element}
+          ->new( $base_element_args->{template_args} // {} )
           : Moonshine::Element->new($base_element_args);
     }
 
@@ -58,6 +63,15 @@ sub add_base_element {
 
 sub render {
     return $_[0]->{base_element}->render;
+}
+
+sub children {
+    my $element = $_[0]->_return_base_element($_[0]->{base_element});
+    return $element->{children};
+}
+
+sub element {
+    return $_[0]->_return_base_element($_[0]->{base_element});
 }
 
 sub _merge_configs {
@@ -74,29 +88,17 @@ sub _process_config {
     for ( @{$action_config} ) {
         my $key   = ( keys %{$_} )[0];
         my $value = $_->{$key};
+        
+        my $processed_element = $self->add_base_element($value->{build} ? $value->{build} : $value);
 
-        defined $value->{tag}
-          and $config->{$key} = $self->add_base_element($value)
-          and next;
-
-        my $processed_element;
-        if ( defined $value->{template} ) {
-            my $template_args = $value->{template_args} // {};
-            $processed_element =
-              $value->{template}->new($template_args)->{base_element};
-        }
-        elsif ( defined $value->{build} ) {
-            $processed_element = $self->add_base_element( $value->{build} );
-        }
-
-        if ( defined $processed_element ) {
+        if ( is_blessed_ref($processed_element) ) {
             if ( defined $value->{target} ) {
                 my $target =
                     $value->{target} eq 'base_element'
-                  ? $element
-                  : $config->{ $value->{target} };
+                  ? $self->_return_base_element($element)
+                  : $self->_return_base_element($config->{ $value->{target} });
                 my $action = $value->{action} // 'add_child';
-                $target->$action($processed_element);
+                $target->$action($self->_return_base_element($processed_element));
             }
             $config->{$key} = $processed_element;
         }
@@ -185,6 +187,10 @@ sub _make_shine {
     };
 
     return 1;
+}
+
+sub _return_base_element {
+    return $_[1]->{base_element} ? $_[1]->{base_element} : $_[1];
 }
 
 1;

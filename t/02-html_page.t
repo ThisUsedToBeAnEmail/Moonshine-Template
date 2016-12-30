@@ -116,17 +116,52 @@ sub build_html {
 
     my $header = $base->add_child( { tag => 'head' } );
     my $page_title = $header->add_child( { tag => 'title', data => ['Page Title'] } );
-    my $body = $base->add_child( $self->body );
+    my $body = $base->add_child( $self->body->element );
 
     my $first_body_child = $body->children->[0];
     my $page_header      = $first_body_child->add_before_element(
         { tag => 'h1', data => ['Page Heading'] } 
     );
 
-    my $footer = $body->add_child( $self->footer );
+    my $footer = $body->add_child( $self->footer->element );
 
     return $base;
 }
+
+package Test::HTML::Simple;
+
+our @ISA;
+BEGIN { @ISA = 'Moonshine::Template' } 
+
+sub config {
+    return {
+        base_element => {
+            template => 'Test::HTML'
+        },
+    };
+}
+
+sub build_html {
+    return $_[1];
+}
+
+package Test::HTML::Simple::Body;
+
+our @ISA;
+BEGIN { @ISA = 'Moonshine::Template' } 
+
+sub config {
+    return {
+        base_element => {
+            template => 'Test::HTML'
+        },
+    };
+}
+
+sub build_html {
+    return $_[1];
+} 
+
 
 package main;
 
@@ -164,6 +199,18 @@ subtest "build_and_render" => sub {
 '<html><head><title>Page Title</title></head><body><h1>Page Heading</h1><ul><li class="one">one</li><li class="two">two</li><li class="three">three</li></ul><footer><h1>lnation</h1></footer></body></html>'
         }
     );
+    build_and_render(
+        {
+            class => 'Test::HTML::Simple',
+            expected => '<html><head><title>Page Title</title></head><body><h1>Page Heading</h1><ul><li class="one">one</li><li class="two">two</li><li class="three">three</li></ul><footer><h1>lnation</h1></footer></body></html>'
+        }
+    );
+    build_and_render(
+        {
+            class => 'Test::HTML::Simple::Body',
+            expected => '<html><head><title>Page Title</title></head><body><h1>Page Heading</h1><ul><li class="one">one</li><li class="two">two</li><li class="three">three</li></ul><footer><h1>lnation</h1></footer></body></html>'
+        }
+    ); 
 };
 
 sub build_and_render {
@@ -171,7 +218,7 @@ sub build_and_render {
 
     ok( my $class = $args->{class}->new( $args->{args} // {} ) );
     is( $class->render, $args->{expected},
-        "render some html - $args->{expected}" );
+        "render some html $args->{class} - $args->{expected}" );
 }
 
 done_testing();
