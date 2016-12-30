@@ -9,9 +9,11 @@ use Moonshine::Element;
 use Ref::Util qw/:all/;
 use Hash::Merge qw/merge/;
 
-our @ISA; BEGIN { @ISA = ('UNIVERSAL::Object') }
+our @ISA;
+BEGIN { @ISA = ('UNIVERSAL::Object') }
 
 our %HAS;
+
 BEGIN {
     %HAS = ( base_element => sub { undef } );
 }
@@ -19,7 +21,7 @@ BEGIN {
 sub BUILD {
     my ( $self, $build_args ) = @_;
 
-    my $config = $self->_merge_configs($build_args->{config} // {});
+    my $config = $self->_merge_configs( $build_args->{config} // {} );
 
     my $base_element = $self->add_base_element( $build_args->{base_element}
           // delete $config->{base_element} );
@@ -38,24 +40,31 @@ sub BUILD {
 
 sub add_base_element {
     my ( $self, $base_element_args ) = @_;
-    !$base_element_args
-      and $self->can('base_element')
-      and $base_element_args = $self->base_element;
-    return
-      defined $base_element_args
-      ? Moonshine::Element->new($base_element_args)
-      : undef;
+
+    if ($self->can('base_element')){
+        $base_element_args = merge($self->base_element, $base_element_args);
+    }
+
+    if ( is_hashref($base_element_args) ) {
+        return
+          defined $base_element_args->{template}
+          ? $base_element_args->{template}
+          ->new( $base_element_args->{template_args} // {} )->{base_element}
+          : Moonshine::Element->new($base_element_args);
+    }
+
+    return undef;
 }
 
 sub render {
     return $_[0]->{base_element}->render;
 }
- 
+
 sub _merge_configs {
-    my ($self, $build_config) = (shift, shift);
+    my ( $self, $build_config ) = ( shift, shift );
     my $base_config = $self->can('config') && $self->config // {};
-    return merge($build_config, $base_config);
-} 
+    return merge( $build_config, $base_config );
+}
 
 sub _process_config {
     my ( $self, $config, $element ) = @_;
@@ -73,19 +82,24 @@ sub _process_config {
         my $processed_element;
         if ( defined $value->{template} ) {
             my $template_args = $value->{template_args} // {};
-            $processed_element = $value->{template}->new($template_args)->{base_element};
-        } elsif ( defined $value->{build} ) {
-            $processed_element = $self->add_base_element($value->{build});
+            $processed_element =
+              $value->{template}->new($template_args)->{base_element};
+        }
+        elsif ( defined $value->{build} ) {
+            $processed_element = $self->add_base_element( $value->{build} );
         }
 
         if ( defined $processed_element ) {
             if ( defined $value->{target} ) {
-                my $target = $value->{target} eq 'base_element' ? $element : $config->{$value->{target}};
+                my $target =
+                    $value->{target} eq 'base_element'
+                  ? $element
+                  : $config->{ $value->{target} };
                 my $action = $value->{action} // 'add_child';
                 $target->$action($processed_element);
             }
-            $config->{$key} = $processed_element;    
-       }
+            $config->{$key} = $processed_element;
+        }
     }
 
     for ( keys %{$config} ) {
@@ -102,7 +116,7 @@ sub _config_to_actions {
     my @keys    = keys %{$config};
     my $previous;
     while (@keys) {
-        my $key = shift @keys;
+        my $key   = shift @keys;
         my $value = $config->{$key};
 
         grep { defined $value->{$_} } qw/action target template tag build/
@@ -125,7 +139,8 @@ sub _config_to_actions {
             for ( my $index = 0 ; $index < $config_count ; $index++ ) {
                 if ( my $target_found = $configs[$index]->{$target} ) {
                     splice @configs, $index + 1, 0, { $key => $value };
-                    $success = 1 and last;
+                    $success = 1;
+                    last;
                 }
             }
         }

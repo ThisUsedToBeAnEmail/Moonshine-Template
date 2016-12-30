@@ -128,7 +128,7 @@ sub config {
         paragraph => {
             build => {
                 tag => 'p',
-                data => [ 'some text' ],
+                data =>  'some text',
             },
             action => 'add_child',
             target => 'content',
@@ -155,7 +155,7 @@ sub config {
                 config => {
                     paragraph => {
                         build => {
-                            data => ['some other text'],
+                            data => 'some other text',
                         }
                     }
                 }
@@ -181,7 +181,7 @@ sub config {
                 config => {
                     paragraph => {
                         build => {
-                            data => ['some other text'],
+                            data => 'some other text',
                         }
                     }
                 } 
