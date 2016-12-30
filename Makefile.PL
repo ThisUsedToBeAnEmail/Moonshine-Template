@@ -19,7 +19,7 @@ WriteMakefile(
         'Test::More' => 0,
     },
     PREREQ_PM => {
-    	'Moonshine::Element' => '0.03',
+    	'Moonshine::Element' => '0.04',
 	    'UNIVERSAL::Object' => '0.04',
         'Ref::Util' => '0.101',
         'Hash::Merge' => '0.200',
